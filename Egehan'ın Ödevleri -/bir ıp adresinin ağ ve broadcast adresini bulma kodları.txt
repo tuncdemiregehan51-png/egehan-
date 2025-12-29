@@ -1,0 +1,44 @@
+import ipaddress
+
+# Kullanıcıdan IP adresini al
+ip_input = input("IP adresini gir (örnek: 192.168.1.55 veya 10.0.0.5/16): ")
+
+# Eğer kullanıcı maske girmediyse otomatik sınıf belirle
+if "/" not in ip_input:
+    first_octet = int(ip_input.split(".")[0])
+    if 1 <= first_octet <= 126:
+        ip_input += "/8"   # A sınıfı
+    elif 128 <= first_octet <= 191:
+        ip_input += "/16"  # B sınıfı
+    elif 192 <= first_octet <= 223:
+        ip_input += "/24"  # C sınıfı
+    else:
+        print("❌ Geçerli bir sınıf A, B veya C IP'si girilmedi.")
+        exit()
+
+try:
+    ip = ipaddress.ip_interface(ip_input)
+    net = ip.network
+
+    network_address = net.network_address
+    broadcast_address = net.broadcast_address
+    subnet_mask = net.netmask
+    usable_hosts = net.num_addresses - 2 if net.num_addresses > 2 else 0
+
+    if usable_hosts > 0:
+        first_host = list(net.hosts())[0]
+        last_host = list(net.hosts())[-1]
+    else:
+        first_host = last_host = "Yok (Bu ağda host bulunmaz)"
+
+    print("\n=== IP AĞ BİLGİLERİ ===")
+    print(f"Girilen IP:             {ip.ip}")
+    print(f"Ağ Adresi (Network):    {network_address}")
+    print(f"Broadcast Adresi:       {broadcast_address}")
+    print(f"Subnet Maskesi:         {subnet_mask}")
+    print(f"Kullanılabilir Host Sayısı: {usable_hosts}")
+    print(f"İlk Host:               {first_host}")
+    print(f"Son Host:               {last_host}")
+
+except ValueError:
+    print("❌ Hatalı IP adresi girdin! Lütfen doğru formatta gir.")
